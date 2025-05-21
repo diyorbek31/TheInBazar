@@ -84,5 +84,27 @@ namespace TheInBazar.Test.Controllers
             user.Lastname.Should().Be("Juraev");
             user.Email.Should().Be("31diyor");
         }
+
+        [Fact]
+        public async Task OnPostUser_WhenValidData_ShouldCreateUser()
+        {
+            var client = _factory.CreateClient();
+            var newUser = new User()
+            {
+                Firstname = "Asadbek",
+                Lastname = "Adhamov",
+                Email = "asad1106",
+                Password = "1234"
+            };
+
+            var response = await client.PostAsJsonAsync("api/users", newUser);
+            response.EnsureSuccessStatusCode();
+
+            var db = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<AppDbContext>();
+            var savedUser = db.Users.FirstOrDefault(u => u.Email == "asad1106");
+
+            savedUser.Should().NotBeNull();
+            savedUser!.Firstname.Should().Be("Asadbek");
+        }
     }
 }
