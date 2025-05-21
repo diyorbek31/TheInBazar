@@ -1,13 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using TheInBazar.Data.DbContexts;
-using TheInBazar.Data.IRepositories;
-using TheInBazar.Data.Repositories;
 using TheInBazar.Service.Mappers;
-using TheInBazar.Api.MiddleWares;
 using TheInBazar.Service.Interfaces;
 using TheInBazar.Service.Services;
-using Serilog;
+using TheInBazar.Data.IRepositories;
+using TheInBazar.Data.Repositories;
 using TheInBazar.Api.Extensions;
+using TheInBazar.Api.MiddleWares;
+using Serilog;
 
 namespace TheInBazar.Api
 {
@@ -17,22 +17,30 @@ namespace TheInBazar.Api
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            // Add controllers
             builder.Services.AddControllers();
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
 
-            builder.Services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            // Add Swagger/OpenAPI
+            // Assuming this is an extension method in your project
 
+            // Check if the app is running in test mode
+            var isTesting = builder.Environment.EnvironmentName == "InBazartesting";
+            if (!isTesting)
+            {
+                builder.Services.AddDbContext<AppDbContext>(options =>
+                    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            }
+
+            // Register services and automapper
             builder.Services.AddCustomService();
             builder.Services.AddAutoMapper(typeof(MappingProfile));
 
-            // Configure Serilog logging
+            // Configure Serilog
             var logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(builder.Configuration)
                 .Enrich.FromLogContext()
                 .CreateLogger();
+
             builder.Logging.ClearProviders();
             builder.Logging.AddSerilog(logger);
 
@@ -49,9 +57,10 @@ namespace TheInBazar.Api
             app.UseMiddleware<ExceptionHandlerMiddleWare>();
             app.UseAuthorization();
             app.MapControllers();
+
             app.Run();
         }
-
-        
     }
+
+    public partial class Program { }
 }

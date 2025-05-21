@@ -1,8 +1,8 @@
 ﻿namespace TheInBazar.Test;
 
-public class Response
+public class Response<T>
 {
     public int StatusCode {  get; set; }
     public string Message { get; set; }  = string.Empty;
-    public object? Data {  get; set; }
+    public T Data {  get; set; }
 }
